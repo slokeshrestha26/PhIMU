@@ -31,3 +31,10 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# MAC files
+.DS_Store
+
+# Experiment output files
+/Confusion Matrices*/
+
