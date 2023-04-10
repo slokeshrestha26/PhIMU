@@ -38,7 +38,6 @@ class Feature_Extractor():
         self.SLID_PARAM = SLID_PARAM
         self.THROW_N = THROW_N
         self.features = self.get_feature_df()
-        self.calculate_features()
 
     def get_feature_df(self):
         """Return a dataframe with features columns"""
@@ -128,8 +127,6 @@ class Feature_Extractor():
                         print("Reading file: ", f'{file_path}/{file}')
                         audio, _ = librosa.load(f'{file_path}/{file}', sr = self.SMPLE_FREQ_AUDIO)
 
-                #preprocess the data
-                self.preprocess(acc, gyro, audio)
                 # get the label of the file
                 label = dataset.labels[d_fldr[:-20]]
                 print(label)
@@ -140,6 +137,7 @@ class Feature_Extractor():
                                                      part)
                 
                 # append the features to the dataframe
+
                 self.features = self.features.append(features, ignore_index = True)
 
             break
@@ -187,9 +185,6 @@ class Feature_Extractor():
                                             audio[strt_idx_audio:end_idx_audio],
                                             label,
                                             part)
-            
-            # append the features to the dataframe
-            self.features = self.features.append(features, ignore_index = True)
 
             # update the frame start and end times
             strt_time += self.SLID_PARAM
