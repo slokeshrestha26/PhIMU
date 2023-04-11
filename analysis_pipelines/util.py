@@ -7,7 +7,7 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
 
-SF = 100 #SAMPLE FREQUENCY
+SF_IMU = 100 #SAMPLE FREQUENCY
 FRAME_SIZE = 0.2 # 100ms
 STRIDE = 0.1 # 50% overlap
 THRESHOLD_RMS = 0.11
@@ -23,14 +23,14 @@ if(VISUALIZE_FEATURES or VISUALIZE_RAW):
 
 class Feature_Extractor():
 
-    def __init__(self, FEATURES_WINDOW_LEN = FRAME_SIZE, SMOOTHING_AV_WIND_SIZE = 1/SF, SMPL_FREQ = SF, SLID_PARAM = STRIDE, THROW_N = 5, TRAIN_SET = [], TEST_SET = []):
-        self.SMPL_FREQ = SMPL_FREQ #sampling frequency is 100 Hz
+    def __init__(self, FEATURES_WINDOW_LEN = FRAME_SIZE, SMOOTHING_AV_WIND_SIZE = 1/SF_IMU, SMPL_FREQ_IMU = SF_IMU, SLID_PARAM = STRIDE, THROW_N = 5, TRAIN_SET = [], TEST_SET = []):
+        self.SMPL_FREQ_IMU = SMPL_FREQ_IMU #sampling frequency is 100 Hz
 
         self.SLID_PARAM = SLID_PARAM #stride param.
         self.FEATURE_WINDOW_LEN = FEATURES_WINDOW_LEN #window length in seconds
 
 
-        self.THROW_N = THROW_N*SMPL_FREQ #thorw away THROW_N SAMPLES of data from begining and end of each signal file
+        self.THROW_N = THROW_N*SMPL_FREQ_IMU #thorw away THROW_N SAMPLES of data from begining and end of each signal file
         self.TRAIN_SET = TRAIN_SET #name of participant to use for training
         self.TEST_SET = TEST_SET #name of participant to use for testing
         self.SMOOTHING_AV_WIND_SIZE = SMOOTHING_AV_WIND_SIZE
@@ -241,7 +241,7 @@ class Feature_Extractor():
 
         
         start_idx = 0
-        end_idx = self.FEATURE_WINDOW_LEN*self.SMPL_FREQ
+        end_idx = self.FEATURE_WINDOW_LEN*self.SMPL_FREQ_IMU
 
         if(VISUALIZE_RAW):
             frame_counter = 0
@@ -266,8 +266,8 @@ class Feature_Extractor():
             ## append the feature to the feature window
             features = features.append(feature, ignore_index= True)
             
-            start_idx += self.SLID_PARAM*self.SMPL_FREQ
-            end_idx += self.SLID_PARAM*self.SMPL_FREQ
+            start_idx += self.SLID_PARAM*self.SMPL_FREQ_IMU
+            end_idx += self.SLID_PARAM*self.SMPL_FREQ_IMU
 
             # if (VISUALIZE_RAW):
             #     if frame_counter > 1:
@@ -276,7 +276,7 @@ class Feature_Extractor():
         return features
 
     def smoothing_average(self, df):
-        window_size = self.SMOOTHING_AV_WIND_SIZE*self.SMPL_FREQ
+        window_size = self.SMOOTHING_AV_WIND_SIZE*self.SMPL_FREQ_IMU
         weights = np.repeat(1.0, window_size) / window_size
 
         smooth_data_acc_x = np.convolve(weights, np.array(df.iloc[:,0]), 'valid')
