@@ -28,14 +28,14 @@ class Feature_Extractor():
                  FRAME_SIZE = FRAME_SIZE, 
                  SMOOTHING_AV_WIND_SIZE = 1/SF_IMU, 
                  SMPL_FREQ_IMU = SF_IMU, 
-                 SMPLE_FREQ_AUDIO = SF_AUDIO_YMNET,
+                 SMPL_FREQ_AUDIO = SF_AUDIO_YMNET,
                  SLID_PARAM = STRIDE, 
                  THROW_N = THROW_N):
         
         self.FRAME_SIZE = FRAME_SIZE
         self.SMOOTHING_AV_WIND_SIZE = SMOOTHING_AV_WIND_SIZE
         self.SMPL_FREQ_IMU = SMPL_FREQ_IMU
-        self.SMPLE_FREQ_AUDIO = SMPLE_FREQ_AUDIO
+        self.SMPL_FREQ_AUDIO = SMPL_FREQ_AUDIO
         self.SLID_PARAM = SLID_PARAM
         self.THROW_N = THROW_N
         self.features = self.get_feature_df()
@@ -135,12 +135,13 @@ class Feature_Extractor():
                         gyro.pop("seconds_elapsed")
                     elif (file == "Microphone.caf"):
                         print("Reading file: ", f'{file_path}/{file}')
-                        audio, _ = librosa.load(f'{file_path}/{file}', sr = self.SMPLE_FREQ_AUDIO)
+                        audio, _ = librosa.load(f'{file_path}/{file}', sr = self.SMPL_FREQ_AUDIO)
                         # throw away first and last THROW_N seconds
                         audio = audio[
                             int(self.THROW_N * self.SMPL_FREQ_AUDIO):
                             - int(self.THROW_N * self.SMPL_FREQ_AUDIO)
                         ]
+                
 
                 # get the label of the file
                 label = dataset.labels[d_fldr[:-20]]
@@ -150,7 +151,7 @@ class Feature_Extractor():
                                                      label,
                                                      part)
 
-            break
+
     
     def preprocess(self, acc, gyro, audio):
         """Average smooth IMU and get percussive audio"""
@@ -187,8 +188,8 @@ class Feature_Extractor():
         while end_time <= length:
             strt_idx_imu , end_idx_imu = int(strt_time*self.SMPL_FREQ_IMU), \
                                             int(end_time*self.SMPL_FREQ_IMU)
-            strt_idx_audio, end_idx_audio = int(strt_time*self.SMPLE_FREQ_AUDIO), \
-                                            int(end_time*self.SMPLE_FREQ_AUDIO) 
+            strt_idx_audio, end_idx_audio = int(strt_time*self.SMPL_FREQ_AUDIO), \
+                                            int(end_time*self.SMPL_FREQ_AUDIO) 
             # get the features of the current frame
 
             #rms_check
@@ -206,7 +207,7 @@ class Feature_Extractor():
             strt_time += self.SLID_PARAM
             end_time += self.SLID_PARAM
 
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             self.features = self.features.append(features, ignore_index = True)
     
     def get_features_per_frame(self,
