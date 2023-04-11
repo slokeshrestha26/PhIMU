@@ -180,10 +180,13 @@ class Feature_Extractor():
             strt_idx_audio, end_idx_audio = int(strt_time*self.SMPLE_FREQ_AUDIO), \
                                             int(end_time*self.SMPLE_FREQ_AUDIO) 
             # get the features of the current frame
+
+            #rms_check
+            segment_class = self.separate_null_positive(gyro, label)
             features = self.get_features_per_frame(acc.iloc[strt_idx_imu:end_idx_imu, :],
                                             gyro.iloc[strt_idx_imu:end_idx_imu, :],
                                             audio[strt_idx_audio:end_idx_audio],
-                                            label,
+                                            segment_class,
                                             part)
 
             # update the frame start and end times
@@ -365,6 +368,31 @@ class Feature_Extractor():
     def get_audio_embeddings(self, audio):
         """ Extract audio embeddings from Cnn14_mAP=0.431.pth model"""
         pass
+
+    def separate_null_positive(self, gyro, class_name):
+        """ Given a frame of data, data_frame, assign the class label only if the
+        data_frame passes the threshhold rule. Otherwise, assign the class label as null_class
+        """
+        if (self.rms_check(gyro, THRESHOLD_RMS_GYRO)): 
+            return class_name
+        return "null_class"
+    
+    def rms_check(self, gyro, threshold):
+        # calculate rms for each channel in gyroscope
+        rms_acc_x = np.sqrt(np.mean(\
+            self.mean_normalize(gyro.loc[:, "x"])**2)
+            )
+        rms_acc_y = np.sqrt(np.mean(\
+            self.mean_normalize(gyro.loc[:, "y"])**2)
+            )
+        rms_acc_z = np.sqrt(np.mean(\
+            self.mean_normalize(gyro.loc[:, "z"])**2)
+            )
+
+        # print("RMS Value: {}".format(np.max([rms_acc_x, rms_acc_y, rms_acc_z])))
+        if(np.max([rms_acc_x, rms_acc_y, rms_acc_z]) > threshold):
+            return True
+        return False
 
 if __name__ == "__main__":
     feature_extractor = Feature_Extractor()
