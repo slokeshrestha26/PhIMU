@@ -38,3 +38,13 @@ google-services.json
 # Experiment output files
 /Confusion Matrices*/
 
+# data files
+*.csv
+*.caf
+/dataset
+
+#pycache
+__pycache__/
+
+/PANNS MODELS/
+
