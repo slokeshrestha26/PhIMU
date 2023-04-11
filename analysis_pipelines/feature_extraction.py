@@ -16,7 +16,8 @@ SF_IMU = 100 #SAMPLE FREQUENCY
 FRAME_SIZE = 0.2 # 200ms
 STRIDE = 0.1 # 50% overlap. 100ms
 THRESHOLD_RMS_GYRO = 0.11 # threhoold used for gyro for gesture segmentation
-SF_AUDIO = 16000 # sample frequency of audio
+SF_AUDIO_YMNET = 16000 # sample frequency of audio recorded
+THROW_N = 5 # number of frames to throw at the beginning and end of the recording
 
 class Feature_Extractor():
     """Class that ecapsulates feature extraction
@@ -27,9 +28,9 @@ class Feature_Extractor():
                  FRAME_SIZE = FRAME_SIZE, 
                  SMOOTHING_AV_WIND_SIZE = 1/SF_IMU, 
                  SMPL_FREQ_IMU = SF_IMU, 
-                 SMPLE_FREQ_AUDIO = SF_AUDIO,
+                 SMPLE_FREQ_AUDIO = SF_AUDIO_YMNET,
                  SLID_PARAM = STRIDE, 
-                 THROW_N = 5):
+                 THROW_N = THROW_N):
         
         self.FRAME_SIZE = FRAME_SIZE
         self.SMOOTHING_AV_WIND_SIZE = SMOOTHING_AV_WIND_SIZE
@@ -116,29 +117,38 @@ class Feature_Extractor():
                     if (file == "Accelerometer.csv"):
                         print("Reading file: ", f'{file_path}/{file}')
                         acc = pd.read_csv(f'{file_path}/{file}')
+                        # throw away first and last THROW_N seconds
+                        acc = acc.iloc[
+                            int(self.THROW_N * self.SMPL_FREQ_IMU): 
+                            - int(self.THROW_N * self.SMPL_FREQ_IMU)
+                        ]
                         acc.pop("time")
                         acc.pop("seconds_elapsed")
                     elif (file == "Gyroscope.csv"):
                         print("Reading file: ", f'{file_path}/{file}')
                         gyro = pd.read_csv(f'{file_path}/{file}')
+                        gyro = gyro.iloc[
+                            int(self.THROW_N * self.SMPL_FREQ_IMU): 
+                            - int(self.THROW_N * self.SMPL_FREQ_IMU)
+                        ]
                         gyro.pop("time")
                         gyro.pop("seconds_elapsed")
                     elif (file == "Microphone.caf"):
                         print("Reading file: ", f'{file_path}/{file}')
                         audio, _ = librosa.load(f'{file_path}/{file}', sr = self.SMPLE_FREQ_AUDIO)
+                        # throw away first and last THROW_N seconds
+                        audio = audio[
+                            int(self.THROW_N * self.SMPL_FREQ_AUDIO):
+                            - int(self.THROW_N * self.SMPL_FREQ_AUDIO)
+                        ]
 
                 # get the label of the file
                 label = dataset.labels[d_fldr[:-20]]
-                print(label)
                 acc, gyro, audio = self.preprocess(acc, gyro, audio)
                 # get the features of the file
-                features = self.sl_wind_feat_extract(acc, gyro, audio, 
+                self.sl_wind_feat_extract(acc, gyro, audio, 
                                                      label,
                                                      part)
-                
-                # append the features to the dataframe
-
-                self.features = self.features.append(features, ignore_index = True)
 
             break
     
@@ -182,7 +192,10 @@ class Feature_Extractor():
             # get the features of the current frame
 
             #rms_check
-            segment_class = self.separate_null_positive(gyro, label)
+            if(label == 2 | label == 4 | label == 5 | label == 6 | label == 7):
+                segment_class = self.separate_null_positive(gyro, label)
+            else:
+                segment_class = label
             features = self.get_features_per_frame(acc.iloc[strt_idx_imu:end_idx_imu, :],
                                             gyro.iloc[strt_idx_imu:end_idx_imu, :],
                                             audio[strt_idx_audio:end_idx_audio],
@@ -192,6 +205,9 @@ class Feature_Extractor():
             # update the frame start and end times
             strt_time += self.SLID_PARAM
             end_time += self.SLID_PARAM
+
+            import pdb; pdb.set_trace()
+            self.features = self.features.append(features, ignore_index = True)
     
     def get_features_per_frame(self,
                                  acc, gyro, audio,
@@ -353,8 +369,11 @@ class Feature_Extractor():
     
 
     def get_rms(self, data):
+        """To Do: Test"""
         normalized_mean = self.mean_normalize(data)
-        return np.sqrt(np.sum(normalized_mean**2))/len(normalized_mean)
+        return np.sqrt(
+            np.sum(normalized_mean**2)/len(normalized_mean)
+            )
 
     def mean_normalize(self, data):
         return data - np.mean(data)
@@ -379,18 +398,12 @@ class Feature_Extractor():
     
     def rms_check(self, gyro, threshold):
         # calculate rms for each channel in gyroscope
-        rms_acc_x = np.sqrt(np.mean(\
-            self.mean_normalize(gyro.loc[:, "x"])**2)
-            )
-        rms_acc_y = np.sqrt(np.mean(\
-            self.mean_normalize(gyro.loc[:, "y"])**2)
-            )
-        rms_acc_z = np.sqrt(np.mean(\
-            self.mean_normalize(gyro.loc[:, "z"])**2)
-            )
+        rms_gyro_x = self.get_rms(gyro.loc[:, "x"])
+        rms_gyro_y = self.get_rms(gyro.loc[:, "y"])
+        rms_gyro_z = self.get_rms(gyro.loc[:, "z"])
 
         # print("RMS Value: {}".format(np.max([rms_acc_x, rms_acc_y, rms_acc_z])))
-        if(np.max([rms_acc_x, rms_acc_y, rms_acc_z]) > threshold):
+        if(np.max([rms_gyro_x, rms_gyro_y, rms_gyro_z]) > threshold):
             return True
         return False
 
