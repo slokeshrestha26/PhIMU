@@ -8,6 +8,7 @@ import pandas as pd
 import librosa
 from harmonic_percussive_filter import harmonic_percussive_filter
 import dataset
+from cnn_embeddings import YamNetEmbeddings
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -74,7 +75,7 @@ class Feature_Extractor():
                                             }) # NOTE omega = angle between maximum and minimum 
     
     # add 150 columns on the feature dataframe for audio features
-        for i in range(150):
+        for i in range(YamNetEmbeddings.n_embeddings):
             features['audio_embedding ' + str(i)] = []
 
         return features
@@ -217,22 +218,17 @@ class Feature_Extractor():
         """Extracts features from a single frame"""
         # get the features of the current frame
         imu_features = self.get_imu_features(acc, gyro)
-        # audio_features = self.get_audio_features(audio)
+        audio_embeddings = YamNetEmbeddings.get_audio_embeddings(audio)
         
         self.preprocess_embeddings(imu_features)
+        self.preprocess_embeddings(audio_embeddings)
 
-        # TEST
-        imu_features["label"] = label
-        imu_features["participant"] = part
-        return imu_features
+        audio_imu_feat = pd.concat([imu_features, audio_embeddings], axis=1)
 
-        # self.preprocess_embeddings(audio_features)
+        audio_imu_feat["label"] = label
+        audio_imu_feat["participant"] = part
 
-        # audio_imu_feat = pd.concat([imu_features, audio_features], axis=1)
-        # audio_imu_feat["label"] = label
-        # audio_imu_feat["participant"] = part
-        
-        # return audio_imu_feat
+        return audio_imu_feat
 
     def get_imu_features(self, acc, gyro):
         """
@@ -262,7 +258,7 @@ class Feature_Extractor():
         
         orientation = arccos(acc.loc[:,"y"]/acc_mag)
 
-        feature = pd.Series({"mean_acc_x": acc.loc[:, "x"].mean(), 
+        feature = pd.DataFrame({"mean_acc_x": acc.loc[:, "x"].mean(), 
                                 "mean_acc_y": acc.loc[:, "y"].mean(), 
                                 "mean_acc_z": acc.loc[:, "z"].mean(),
                                 
@@ -364,7 +360,8 @@ class Feature_Extractor():
                             "rms_gyro_x": self.get_rms(gyro.loc[:, "x"]),
                             "rms_gyro_y": self.get_rms(gyro.loc[:, "y"]),
                             "rms_gyro_z": self.get_rms(gyro.loc[:, "z"])                             
-                                                                })
+                                                                },
+                                                                index=[0])
         
         return feature
     

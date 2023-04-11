@@ -53,9 +53,6 @@ __pycache__/
 *.caf
 /dataset
 
-#pycache
-__pycache__/
-
 /PANNS MODELS/
 
 /analysis_pipelines/dataset/
@@ -63,5 +60,7 @@ __pycache__/
 
 test.py
 
-/__pycache__/
+__pycache__/
 *.properties
+
+*.pyc
