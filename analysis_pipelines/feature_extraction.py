@@ -383,7 +383,7 @@ class Feature_Extractor():
         rms_gyro_x = self.get_rms(gyro.loc[:, "x"])
         rms_gyro_y = self.get_rms(gyro.loc[:, "y"])
         rms_gyro_z = self.get_rms(gyro.loc[:, "z"])
-
+        
         # print("RMS Value: {}".format(np.max([rms_acc_x, rms_acc_y, rms_acc_z])))
         if(np.max([rms_gyro_x, rms_gyro_y, rms_gyro_z]) > threshold):
             return True

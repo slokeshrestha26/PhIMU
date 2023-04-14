@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 
+
 import util
 
 #remove warnings
@@ -24,7 +25,7 @@ EXTRA_COMMENTS = "Building classifier after solving a bug that mismatched differ
 classes_of_interest = ["swipe_left_to_right", "null_class", "scroll", "portrait_tap", "swipe_right_to_left"]
 
 
-def run_experiment(X_train, Y_train, X_test, Y_test, clf, clf_name):
+def run_experiment(features, clf, clf_name):
 
     pipe = Pipeline([("scaler", StandardScaler()), 
                      (clf_name, clf)])
@@ -41,6 +42,16 @@ def run_experiment(X_train, Y_train, X_test, Y_test, clf, clf_name):
     #make x and y font size bigger
     plt.xticks(rotation = 90)
     plt.title("{} | f1_score: {}".format(clf_name, f_scr))
+
+def lopo_split(features, left_out = "Alice"):
+    """ Leave one participant out splitting generator """
+    # return index of left out participant
+    left_out_idx = np.where(features["participant"] == left_out)[0]
+    # return index of all other participants
+    other_idx = np.where(features["participant"] != left_out)[0]
+
+    # returning train and test indices
+    return other_idx, left_out_idx
 
 def savefig_util(dir, fname):
     """Handle FileNotFoundError by creating the directory"""
