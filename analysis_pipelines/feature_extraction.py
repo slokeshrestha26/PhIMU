@@ -75,10 +75,7 @@ class Feature_Extractor():
                     "rms_gyro_x": [], "rms_gyro_y": [], "rms_gyro_z": [],
                                 "label": []                                         
                                             }) # NOTE omega = angle between maximum and minimum 
-    
-    # add 150 columns on the feature dataframe for audio features
-        for i in range(YamNetEmbeddings.n_embeddings):
-            features['audio_embedding ' + str(i)] = []
+
 
         return features
 
@@ -138,7 +135,8 @@ class Feature_Extractor():
                 self.sl_wind_feat_extract(acc, gyro, audio, 
                                                      label,
                                                      part)
-
+                break
+            break
 
     
     def preprocess(self, acc, gyro, audio):
@@ -180,8 +178,12 @@ class Feature_Extractor():
                                             int(end_time*self.SMPL_FREQ_AUDIO) 
             # get the features of the current frame
 
-            #rms_check
-            if(label == 2 | label == 4 | label == 5 | label == 6 | label == 7):
+            #rms_check only for gesture like activities
+            if(label == dataset.labels["portrait_tap"] \
+                | label == dataset.labels["swiping_left_to_right"] \
+                | label == dataset.labels["swiping_right_to_left"]\
+                | label == dataset.labels["scrolling"] \
+                | label == dataset.labels["scrolling"]):
                 segment_class = self.separate_null_positive(gyro, label)
             else:
                 segment_class = label
@@ -368,7 +370,7 @@ class Feature_Extractor():
         embeddings = embeddings / np.linalg.norm(embeddings, keepdims=True)
         embeddings = embeddings - np.mean(embeddings, axis=0)
         return embeddings
-    
+
 
     def separate_null_positive(self, gyro, class_name):
         """ Given a frame of data, data_frame, assign the class label only if the
