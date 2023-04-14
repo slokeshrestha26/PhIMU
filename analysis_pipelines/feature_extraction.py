@@ -132,8 +132,6 @@ class Feature_Extractor():
                 self.sl_wind_feat_extract(acc, gyro, audio, 
                                                      label,
                                                      part)
-                break
-            break
 
     
     def preprocess(self, acc, gyro, audio):
