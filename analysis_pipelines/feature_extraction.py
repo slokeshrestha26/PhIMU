@@ -10,8 +10,6 @@ from harmonic_percussive_filter import harmonic_percussive_filter
 import dataset
 from cnn_embeddings import YamNetEmbeddings
 
-from sklearn.validation import Cro
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -72,8 +70,7 @@ class Feature_Extractor():
                               "kurtosis_magnitude_gyro":[],
                               "omega_magnitude_gyro": [],  
                   "rms_acc_x": [], "rms_acc_y": [], "rms_acc_z": [],
-                    "rms_gyro_x": [], "rms_gyro_y": [], "rms_gyro_z": [],
-                                "label": []                                         
+                    "rms_gyro_x": [], "rms_gyro_y": [], "rms_gyro_z": []                                        
                                             }) # NOTE omega = angle between maximum and minimum 
 
 
@@ -214,8 +211,9 @@ class Feature_Extractor():
 
         audio_imu_feat = pd.concat([imu_features, audio_embeddings], axis=1)
 
-        audio_imu_feat["label"] = label
         audio_imu_feat["participant"] = part
+        audio_imu_feat["label"] = label
+        
 
         return audio_imu_feat
 
