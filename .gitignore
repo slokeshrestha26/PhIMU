@@ -34,7 +34,7 @@ google-services.json
 
 # MAC files
 .DS_Store
-
+ 
 # Experiment output files
 /Confusion Matrices*/
 
@@ -48,3 +48,19 @@ __pycache__/
 
 /PANNS MODELS/
 
+# data files
+*.csv
+*.caf
+/dataset
+
+/PANNS MODELS/
+
+/analysis_pipelines/dataset/
+/PANNS models/
+
+test.py
+
+__pycache__/
+*.properties
+
+*.pyc

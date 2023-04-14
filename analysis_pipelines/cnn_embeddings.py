@@ -5,6 +5,7 @@ import tensorflow_hub as hub
 
 # imports for testing
 from librosa import load
+import pandas as pd
 
 """Class to extract 1024 audio embeddings from YamNet.
 Example:
@@ -16,7 +17,7 @@ Example:
     Note: Only accepts audio files less than 0.96 seconds long."""
 
 class YamNetEmbeddings:
-
+    n_embeddings = 1024
     YMNET_SF = 16000
     yamnet_model = hub.load('https://tfhub.dev/google/yamnet/1')
 
@@ -25,7 +26,12 @@ class YamNetEmbeddings:
         waveform = YamNetEmbeddings.__zero_padding(waveform, YamNetEmbeddings.YMNET_SF).astype(np.float32)
         _, embeddings, _ = YamNetEmbeddings.yamnet_model(waveform)
 
-        return embeddings.numpy()
+        #convert to pandas dataframe
+        embeddings = pd.DataFrame(embeddings.numpy())
+        # Add prefix, "audio_embedding_" to each column name
+        embeddings.columns = ["audio_embedding_" + str(col) for col in embeddings.columns]
+        return embeddings
+    
     @staticmethod
     def __zero_padding(audio, sample_rate):
         """Zero pad audio to 0.96 seconds"""
