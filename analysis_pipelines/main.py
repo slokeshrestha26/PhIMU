@@ -13,8 +13,9 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 
-
-import util
+import pandas as pd
+import feature_extraction as feat_ex
+import dataset
 
 #remove warnings
 import warnings
@@ -22,10 +23,15 @@ warnings.filterwarnings("ignore")
 
 ITERATION = 0 #numbering the experiment so that saving confusion matrices is easier
 EXTRA_COMMENTS = "Building classifier after solving a bug that mismatched different channels in the dataset."
-classes_of_interest = ["swipe_left_to_right", "null_class", "scroll", "portrait_tap", "swipe_right_to_left"]
+classes_of_interest = [dataset.labels["swiping_left_to_right"], \
+                       dataset.labels["null_class"],\
+                        dataset.labels["scrolling"],\
+                        dataset.labels["portrait_tap"],\
+                        dataset.labels["swiping_right_to_left"]
+                        ]
 
 
-def run_experiment(features, clf, clf_name):
+def run_experiment(X_train, Y_train, X_test, Y_test, clf, clf_name):
 
     pipe = Pipeline([("scaler", StandardScaler()), 
                      (clf_name, clf)])
@@ -43,15 +49,17 @@ def run_experiment(features, clf, clf_name):
     plt.xticks(rotation = 90)
     plt.title("{} | f1_score: {}".format(clf_name, f_scr))
 
-def lopo_split(features, left_out = "Alice"):
+def lopo_split(features):
     """ Leave one participant out splitting generator """
     # return index of left out participant
-    left_out_idx = np.where(features["participant"] == left_out)[0]
-    # return index of all other participants
-    other_idx = np.where(features["participant"] != left_out)[0]
+    parts = np.unique(features["participant"])
+    for part in parts:
+        left_out_idx = np.where(features["participant"] == part)[0]
+        # return index of all other participants
+        other_idx = np.where(features["participant"] != part)[0]
 
-    # returning train and test indices
-    return other_idx, left_out_idx
+        # returns left_out_idx, other_idx, left out participant name, rest of participants
+        yield left_out_idx, other_idx, part, [x for x in parts if x != part]
 
 def savefig_util(dir, fname):
     """Handle FileNotFoundError by creating the directory"""
@@ -64,7 +72,7 @@ def savefig_util(dir, fname):
 
 def log_notes_util(f, parts, feat_ex):
     """Utility function to write notes to experiment directory"""
-    f.write("This was confusion matrix results after leave one participant out scheme training with the following subjects:\n")
+    f.write("This was confusion matrix results after leave one participant out scheme training with all the following subjects:\n")
     f.write("Participants: {} \n".format(str(parts)))
 
     f.write("Frame Window Size: {} \n".format(feat_ex.FEATURE_WINDOW_LEN))
@@ -88,26 +96,26 @@ def log_notes(dir, parts, feat_ex):
 if __name__ == "__main__":
     """Levae one participant out scheme """
 
-    participants = os.listdir("dataset/")
-    participants = participants[1:]
+    #if features.csv exists, load them
+    if os.path.exists("features.csv"):
+        features = pd.read_csv("features.csv")
+    else:
+        f_e = feat_ex.Feature_Extractor()
+        f_e.calculate_features()
+        features = f_e.features
+        #save features to csv
+        features.to_csv("features.csv", index = False)
 
-    # Leave one participant out
-    for i in range(len(participants)):
-        left_out_part = participants[i]
-        train_part = participants[0:i] + participants[i+1:]
-        print("Left out participants: {}. Training participants: {}".format(left_out_part, train_part))
-        
-        feat_ex = util.Feature_Extractor(FEATURES_WINDOW_LEN = 2, TRAIN_SET= train_part, TEST_SET=left_out_part)
-        X_train, Y_train, X_test, Y_test = feat_ex.load_features()
-
-        #restrict the classes to only scrolling, typing, swiping, and null for now
-        filt_train = Y_train.isin(classes_of_interest)
-        filt_test = Y_test.isin(classes_of_interest)
-        
-        Y_train, X_train = Y_train.loc[filt_train], X_train.loc[filt_train, :]
-        Y_test, X_test = Y_test.loc[filt_test], X_test.loc[filt_test, :] 
+    # only get features with classes of interest
+    features = features[features["label"].isin(classes_of_interest)]
     
-        
+    for left_out_idx, other_idx, left_out_part, rest_parts in lopo_split(features):
+        X_train = features.iloc[other_idx, :-2].to_numpy()
+        Y_train = features.iloc[other_idx, -1].to_numpy()
+
+        X_test = features.iloc[left_out_idx, :-2].to_numpy()
+        Y_test = features.iloc[left_out_idx, -1].to_numpy()
+
         run_experiment(X_train, Y_train, X_test, Y_test, RandomForestClassifier(), "random_forest")
         savefig_util("Confusion Matrices{}/random_forest/".format(ITERATION), "{}.png".format(left_out_part))
 
@@ -116,5 +124,5 @@ if __name__ == "__main__":
         
         run_experiment(X_train, Y_train, X_test, Y_test, MLPClassifier(random_state = 1, max_iter = 1000), "mlp")
         savefig_util("Confusion Matrices{}/mlp/".format(ITERATION), "{}.png".format(left_out_part))
-    
-    log_notes("Confusion Matrices{}/notes.txt".format(ITERATION), participants, feat_ex)
+        
+        log_notes("Confusion Matrices{}/notes.txt".format(ITERATION), rest_parts, feat_ex)
