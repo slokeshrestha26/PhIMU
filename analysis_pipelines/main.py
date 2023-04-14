@@ -23,11 +23,11 @@ warnings.filterwarnings("ignore")
 
 ITERATION = 0 #numbering the experiment so that saving confusion matrices is easier
 EXTRA_COMMENTS = "Building classifier after solving a bug that mismatched different channels in the dataset."
-classes_of_interest = [dataset.labels["swiping_left_to_right"], \
+classes_of_interest = [dataset.labels["swipe_left_to_right"], \
                        dataset.labels["null_class"],\
                         dataset.labels["scrolling"],\
                         dataset.labels["portrait_tap"],\
-                        dataset.labels["swiping_right_to_left"]
+                        dataset.labels["swipe_right_to_left"]
                         ]
 
 
