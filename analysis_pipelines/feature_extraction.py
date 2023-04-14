@@ -10,6 +10,8 @@ from harmonic_percussive_filter import harmonic_percussive_filter
 import dataset
 from cnn_embeddings import YamNetEmbeddings
 
+from sklearn.validation import Cro
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -22,7 +24,7 @@ THROW_N = 5 # number of frames to throw at the beginning and end of the recordin
 
 class Feature_Extractor():
     """Class that ecapsulates feature extraction
-    Call self.load_features() to load features from available dataset.
+    Call self.calculate_features() to load features from available dataset.
     
     Dataset: annotated data collected from sensor logger app"""
     def __init__(self, 
@@ -80,21 +82,6 @@ class Feature_Extractor():
 
         return features
 
-    def load_features(self, 
-                      cv = "randomCV",
-                      folds = 10,
-                      train_part = ["Alice"],
-                      test_part = ["Sloke"]):
-        """Loads the features according the the cross validation 
-            scheme specified by cv.
-            Returns X_train, y_train, X_test, y_test
-        """
-        if cv == "randomCV":
-            pass
-        elif cv == "lopo":
-            pass
-        else:
-            raise ValueError("cv must be either randomCV or lopo")
 
     def calculate_features(self):
         """Calculate features from raw data in the dataset and 
@@ -382,9 +369,6 @@ class Feature_Extractor():
         embeddings = embeddings - np.mean(embeddings, axis=0)
         return embeddings
     
-    def get_audio_embeddings(self, audio):
-        """ Extract audio embeddings from Cnn14_mAP=0.431.pth model"""
-        pass
 
     def separate_null_positive(self, gyro, class_name):
         """ Given a frame of data, data_frame, assign the class label only if the
