@@ -70,37 +70,37 @@ def savefig_util(dir, fname):
         os.makedirs(dir)
         plt.savefig(dir+fname)
 
-def log_notes_util(f, parts, feat_ex):
+def log_notes_util(f, parts, f_e):
     """Utility function to write notes to experiment directory"""
     f.write("This was confusion matrix results after leave one participant out scheme training with all the following subjects:\n")
     f.write("Participants: {} \n".format(str(parts)))
 
-    f.write("Frame Window Size: {} \n".format(feat_ex.FEATURE_WINDOW_LEN))
-    f.write("Slide Parameter: {} \n".format(feat_ex.SLID_PARAM))
-    f.write("Moving Averae Window: {} \n".format(feat_ex.SMOOTHING_AV_WIND_SIZE))
-    f.write("THROW_N: {} \n".format(feat_ex.THROW_N))
+    f.write("Frame Window Size: {} \n".format(f_e.FRAME_SIZE))
+    f.write("Slide Parameter: {} \n".format(f_e.SLID_PARAM))
+    f.write("Moving Averae Window: {} \n".format(f_e.SMOOTHING_AV_WIND_SIZE))
+    f.write("THROW_N: {} \n".format(f_e.THROW_N))
     f.write("EXTRA NOTES: " + EXTRA_COMMENTS)
 
 
-def log_notes(dir, parts, feat_ex):
+def log_notes(dir, parts, f_e):
     """Log notes in a text file"""
     #handle FileNotFound exception
     try:
         with open(dir, "w") as f:
-            log_notes_util(f, parts, feat_ex)
+            log_notes_util(f, parts, f_e)
     except FileNotFoundError:
         os.makedirs(dir)
         with open(dir, "w") as f:
-            log_notes_util(f, parts, feat_ex)
+            log_notes_util(f, parts, f_e)
 
 if __name__ == "__main__":
     """Levae one participant out scheme """
 
     #if features.csv exists, load them
+    f_e = feat_ex.Feature_Extractor()
     if os.path.exists("features.csv"):
         features = pd.read_csv("features.csv")
     else:
-        f_e = feat_ex.Feature_Extractor()
         f_e.calculate_features()
         features = f_e.features
         #save features to csv
@@ -125,4 +125,4 @@ if __name__ == "__main__":
         run_experiment(X_train, Y_train, X_test, Y_test, MLPClassifier(random_state = 1, max_iter = 1000), "mlp")
         savefig_util("Confusion Matrices{}/mlp/".format(ITERATION), "{}.png".format(left_out_part))
         
-        log_notes("Confusion Matrices{}/notes.txt".format(ITERATION), rest_parts, feat_ex)
+        log_notes("Confusion Matrices{}/notes.txt".format(ITERATION), rest_parts, f_e)

@@ -175,8 +175,8 @@ class Feature_Extractor():
 
             #rms_check only for gesture like activities
             if(label == dataset.labels["portrait_tap"] \
-                | label == dataset.labels["swiping_left_to_right"] \
-                | label == dataset.labels["swiping_right_to_left"]\
+                | label == dataset.labels["swipe_left_to_right"] \
+                | label == dataset.labels["swipe_right_to_left"]\
                 | label == dataset.labels["scrolling"] \
                 | label == dataset.labels["scrolling"]):
                 segment_class = self.separate_null_positive(gyro, label)
