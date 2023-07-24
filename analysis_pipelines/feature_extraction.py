@@ -177,7 +177,6 @@ class Feature_Extractor():
             if(label == dataset.labels["portrait_tap"] \
                 | label == dataset.labels["swipe_left_to_right"] \
                 | label == dataset.labels["swipe_right_to_left"]\
-                | label == dataset.labels["scrolling"] \
                 | label == dataset.labels["scrolling"]):
                 segment_class = self.separate_null_positive(gyro, label)
             else:
@@ -355,16 +354,14 @@ class Feature_Extractor():
         """To Do: Test"""
         normalized_mean = self.mean_normalize(data)
         return np.sqrt(
-            np.sum(normalized_mean**2)/len(normalized_mean)
-            )
+            np.sum(normalized_mean**2))/len(normalized_mean)
 
     def mean_normalize(self, data):
         return data - np.mean(data)
     
     def preprocess_embeddings(self, embeddings):
-        """Normalize embeddings to unit length, zero mean and return them as a numpy array"""
+        """Normalize embeddings to unit length and return them as a numpy array"""
         embeddings = embeddings / np.linalg.norm(embeddings, keepdims=True)
-        embeddings = embeddings - np.mean(embeddings, axis=0)
         return embeddings
 
 
@@ -373,6 +370,7 @@ class Feature_Extractor():
         data_frame passes the threshhold rule. Otherwise, assign the class label as null_class
         """
         if (self.rms_check(gyro, THRESHOLD_RMS_GYRO)): 
+            import pdb; pdb.set_trace()
             return class_name
         return "null_class"
     

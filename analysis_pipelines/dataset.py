@@ -13,3 +13,5 @@ labels = {
     'on_table_face_down': 9,
     'null_class': 10
 }
+
+num2label = {v: k for k, v in labels.items()}

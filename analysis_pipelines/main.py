@@ -21,7 +21,10 @@ import dataset
 import warnings
 warnings.filterwarnings("ignore")
 
-ITERATION = 0 #numbering the experiment so that saving confusion matrices is easier
+#set random seed
+np.random.seed(42)
+
+ITERATION = 4 #numbering the experiment so that saving confusion matrices is easier
 EXTRA_COMMENTS = "Building classifier after solving a bug that mismatched different channels in the dataset."
 classes_of_interest = [dataset.labels["swipe_left_to_right"], \
                        dataset.labels["null_class"],\
@@ -106,8 +109,13 @@ if __name__ == "__main__":
         #save features to csv
         features.to_csv("features.csv", index = False)
 
+    import pdb; pdb.set_trace()
+
     # only get features with classes of interest
     features = features[features["label"].isin(classes_of_interest)]
+    # appply num2label on label column
+    features["label"] = features["label"].apply(lambda x: dataset.num2label[x])
+
     
     for left_out_idx, other_idx, left_out_part, rest_parts in lopo_split(features):
         X_train = features.iloc[other_idx, :-2].to_numpy()

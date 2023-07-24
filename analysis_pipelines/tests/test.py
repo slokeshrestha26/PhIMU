@@ -1,11 +1,14 @@
 import pandas as pd
 import numpy as np
 
-df_main = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6],
-                  "c": [7, 8, 9], "d": [10, 11, 12]})
+# Create a list of participant names
+participants = ['Alice', 'Bob', 'Charlie', 'Dave', 'Eve']
 
-df_0 = pd.Series({"a": 1, "b": 4})
+# Create a dummy dataframe with participant names and some numerical data
+df = pd.DataFrame({
+    'participant': np.random.choice(participants, size=10),
+    'score': np.random.randint(0, 100, size=10),
+    'age': np.random.randint(18, 50, size=10),
+})
 
-# append two rows to df_main
-df_main = df_main.append(df_0, ignore_index=True)
-
+print(df)
