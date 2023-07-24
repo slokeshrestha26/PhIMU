@@ -1,0 +1,7 @@
+This was confusion matrix results after leave one participant out scheme training with all the following subjects:
+Participants: ['Alice'] 
+Frame Window Size: 0.2 
+Slide Parameter: 0.1 
+Moving Averae Window: 0.01 
+THROW_N: 5 
+EXTRA NOTES: Building classifier after solving a bug that mismatched different channels in the dataset.

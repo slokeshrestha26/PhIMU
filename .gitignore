@@ -1,0 +1,66 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log/OS Files
+*.log
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+
+# IntelliJ
+*.iml
+.idea/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Android Profiling
+*.hprof
+
+# MAC files
+.DS_Store
+ 
+# Experiment output files
+/Confusion Matrices*/
+
+# data files
+*.csv
+*.caf
+/dataset
+
+#pycache
+__pycache__/
+
+/PANNS MODELS/
+
+# data files
+*.csv
+*.caf
+/dataset
+
+/PANNS MODELS/
+
+/analysis_pipelines/dataset/
+/PANNS models/
+
+test.py
+
+__pycache__/
+*.properties
+
+*.pyc
